@@ -3,23 +3,27 @@ const jsonld = {
   // Extend or override global respec references
   localBiblio: {
     // aliases to known references
-    "IEEE-754-2008": {
-      title: "IEEE 754-2008 Standard for Floating-Point Arithmetic",
-      href: "http://standards.ieee.org/findstds/standard/754-2008.html",
-      publisher: "Institute of Electrical and Electronics Engineers",
-      date: "2008"
+    "swagger": {
+      "publisher": "Open API Initiative (OAI)",
+      "title": "SWAGGER: The World's Most Popular Framework for APIs",
+      "href" : "http://swagger.io",
+      "date": "2016-01-01"
     },
-    "PROMISES": {
-      title: 'Promise Objects',
-      href: 'https://github.com/domenic/promises-unwrapping',
-      authors: ['Domenic Denicola'],
-      status: 'unofficial',
-      date: 'January 2014'
+    "json-ld-best-practice-caching": {
+      "authors": [
+        "Manu Sporny",
+        "David Longley"
+      ],
+      "title": "JSON-LD Best Practice: Context Caching",
+      "href": "http://manu.sporny.org/2016/json-ld-context-caching/",
+      "date": "2016-04-24"
+    },
+    "seo-strings-to-things": {
+      "authors": ["Aaron Bradley"],
+      "title": "Semantic SEO: Making the Shift from Strings to Things",
+      "href": "http://www.seoskeptic.com/semantic-seo-making-shift-strings-things/",
+      "date": "2013-10-02",
+      "publisher": "SEO Skeptic"
     }
-  },
-  conversions: {
-    "https://w3c.github.io/json-ld-syntax/": "http://www.w3.org/TR/json-ld11/",
-    "https://w3c.github.io/json-ld-api/": "http://www.w3.org/TR/json-ld11-api/",
-    "https://w3c.github.io/json-ld-framing/": "http://www.w3.org/TR/json-ld11-framing/"
   }
 };

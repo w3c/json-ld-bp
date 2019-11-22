@@ -87,8 +87,11 @@
     </dl>
     </section>
 
+
+
     <section>
-      <h2>Resource Representation</h2>
+      <h2>Data Documents</h2>
+
       <section>
         <h3 id="use-json">Publish data using developer friendly JSON</h3>
         <p class="practicedesc">JSON [[json]] is the most popular format for publishing data through APIs; developers like it, it is easy to parse, and it is supported natively in most programming languages.</p>
@@ -100,6 +103,21 @@
             "jobTitle": "44th President of the United States"
           }
         </pre>
+      </section>
+
+      <section>
+        <h3 id="top-level-object">Use a top-level object</h3>
+        <p class="practicedesc">JSON documents may be in the form of a object, or an array of objects. For most purposes, developers need a single entry point, so the JSON SHOULD be in the form of a single top-level object</p>
+      </section>
+
+      <section>
+        <h3 id="native-values">Use native values</h3>
+        <p class="practicedesc">When possible, property values SHOULD use native JSON datatypes such as numbers (<em>integer</em>, <em>decimal</em> and <em>floating point</em>) and booleans (<code>true</code> and <code>false</code>).</p>
+      </section>
+
+      <section>
+        <h3 id="unordered-values">Assume arrays are unordered</h3>
+        <p class="practicedesc">JSON specifies that the values in an array are ordered, however in many cases arrays are also used for values which are unordered. Unless specified within the <a>JSON-LD Context</a>, multiple array values SHOULD be presumed to be unordered. (See <cite><a href="http://www.w3.org/TR/json-ld/#lists-and-sets">Lists and Sets</a></cite> in [[JSON-LD]]).</p>
       </section>
 
       <section>
@@ -128,26 +146,6 @@
           </pre>
           <p>Expanded form is not useful as is, but is necessary for performing further algorithmic transformations of JSON-LD data and is useful when validating that JSON-LD entity descriptions say what the publisher means.</p>
         </div>
-      </section>
-
-      <section>
-        <h3 id="cache-context">Cache JSON-LD Contexts</h3>
-        <p class="practicedesc">While most use of JSON-LD should not require a client to change the data representation, JSON-LD does allow the use of various algorithms to re-shape a JSON-LD document. These require the use of the <a>JSON-LD Context</a>, which is typically represented using a link to a remote document. Because it is remote, processing time can be severely impacted by the time it takes to retrieve this context. Services providing a <a>JSON-LD Context</a> SHOULD set HTTP cache-control headers to allow liberal caching of such contexts, and clients SHOULD attempt to use a locally cached version of these documents. Typically, libraries used to process JSON-LD documents should do this for you. (See also [[json-ld-best-practice-caching]]).</p>
-      </section>
-
-      <section>
-        <h3 id="top-level-object">Use a top-level object</h3>
-        <p class="practicedesc">JSON documents may be in the form of a object, or an array of objects. For most purposes, developers need a single entry point, so the JSON SHOULD be in the form of a single top-level object</p>
-      </section>
-
-      <section>
-        <h3 id="native-values">Use native values</h3>
-        <p class="practicedesc">When possible, property values SHOULD use native JSON datatypes such as numbers (<em>integer</em>, <em>decimal</em> and <em>floating point</em>) and booleans (<code>true</code> and <code>false</code>).</p>
-      </section>
-
-      <section>
-        <h3 id="unordered-values">Assume arrays are unordered</h3>
-        <p class="practicedesc">JSON specifies that the values in an array are ordered, however in many cases arrays are also used for values which are unordered. Unless specified within the <a>JSON-LD Context</a>, multiple array values SHOULD be presumed to be unordered. (See <cite><a href="http://www.w3.org/TR/json-ld/#lists-and-sets">Lists and Sets</a></cite> in [[JSON-LD]]).</p>
       </section>
 
       <section>
@@ -213,10 +211,59 @@
       </section>
 
       <section>
-        <h3 id="dereferencable-entities">Provide a representation of the entity related by URL</h3>
-        <p class="practicedesc">When dereferencing an entity related via a URL, the location SHOULD provide a representation of that entity. (This practices replicates that described in [[ld-bp]] <cite><a href="http://www.w3.org/TR/ld-bp/#uri-design-principles">Provide at least one machine-readable representation of the resource identified by the URI</a></cite>)</p>
-        <p>Corollaries to this best practice is that Cool URIs don't change [[cooluris]], meaning that URLs describing entities SHOULD be stable and not depend on variable information. Also, the URL used to identify an entity is the best API endpoint of that entity (see also <a href="#api-versioning" class="sectionRef"></a>).</p>
+        <h3 id="things-not-strings">Things not strings</h3>
+        <p class="practicedesc">When describing attributes, entity references SHOULD be used instead of string literals.</p>
+        <p>In some cases, when describing an attribute of an entity, it is tempting to using string values which have no independent meaning. Such values often are used for well known things. A JSON-LD context can define a term for such values, which allow them to appear as strings within the message, but be associated with specific identifiers. In this case, the property must be defined with type <code>@vocab</code> so that values will be interpreted relative to a vocabulary rather than the file location.</p>
+        <pre class="example" title="Example enumerated value">
+          {
+            "@context": ["http://schema.org", <strong>{
+              "gender": {"@id": "schema:gender", "@type": "@vocab"}
+            }</strong>],
+            "id": "http://www.wikidata.org/entity/Q76",
+            "type": "Person",
+            "name": "Barack Obama",
+            "givenName": "Barack",
+            "familyName": "Obama",
+            "jobTitle": "44th President of the United States",
+            <strong>"gender": "Male"</strong>
+          }
+        </pre>
+        <p>See article in SEO Skeptic [[seo-strings-to-things]] for further elaboration on the advantages of using <em>things</em> instead of <em>strings</em>.</p>
       </section>
+
+
+      <section>
+        <h3 id="embed-objects">Nest referenced inline objects</h3>
+        <p class="practicedesc">When multiple related entity descriptions are provided inline, related entities SHOULD be nested.</p>
+        <p>For example, when relating one entity to another, where the related entity is described in the same message:</p>
+        <pre class="example" title="Nested relationships">
+          {
+            "@context": "http://schema.org",
+            "id": "http://www.wikidata.org/entity/Q76",
+            "type": "Person",
+            "name": "Barack Obama",
+            "givenName": "Barack",
+            "familyName": "Obama",
+            "jobTitle": "44th President of the United States",
+            <strong>"spouse": {
+              "id": "http://www.wikidata.org/entity/Q13133",
+              "type": "Person",
+              "name": "Michelle Obama",
+              "spouse": "http://www.wikidata.org/entity/Q76"
+            }</strong>
+          }
+        </pre>
+        <p class="note">In this example, the <code>spouse</code> relationship is bi-directional, we have arbitrarily rooted the message with Barack Obama, and created a symetric relationship from Michelle back to Barack by reference, rather than by nesting.</p>
+      </section>
+
+      <section>
+        <h3 id="reverse-references">When describing an inverse relationship, use a referenced property</h3>
+        <p class="practicedesc"></p>
+      </section>
+    </section>
+
+    <section>
+      <h2>Contexts</h2>
 
       <section>
         <h3 id="type-links">External references should use typed term</h3>
@@ -260,63 +307,26 @@
           }
         </pre>
       </section>
+    </section>
+
+
+    <section>
+      <h2>Publishing</h2>
 
       <section>
-        <h3 id="embed-objects">Nest referenced inline objects</h3>
-        <p class="practicedesc">When multiple related entity descriptions are provided inline, related entities SHOULD be nested.</p>
-        <p>For example, when relating one entity to another, where the related entity is described in the same message:</p>
-        <pre class="example" title="Nested relationships">
-          {
-            "@context": "http://schema.org",
-            "id": "http://www.wikidata.org/entity/Q76",
-            "type": "Person",
-            "name": "Barack Obama",
-            "givenName": "Barack",
-            "familyName": "Obama",
-            "jobTitle": "44th President of the United States",
-            <strong>"spouse": {
-              "id": "http://www.wikidata.org/entity/Q13133",
-              "type": "Person",
-              "name": "Michelle Obama",
-              "spouse": "http://www.wikidata.org/entity/Q76"
-            }</strong>
-          }
-        </pre>
-        <p class="note">In this example, the <code>spouse</code> relationship is bi-directional, we have arbitrarily rooted the message with Barack Obama, and created a symetric relationship from Michelle back to Barack by reference, rather than by nesting.</p>
+        <h3 id="dereferencable-entities">Provide a representation of the entity related by URL</h3>
+        <p class="practicedesc">When dereferencing an entity related via a URL, the location SHOULD provide a representation of that entity. (This practices replicates that described in [[ld-bp]] <cite><a href="http://www.w3.org/TR/ld-bp/#uri-design-principles">Provide at least one machine-readable representation of the resource identified by the URI</a></cite>)</p>
+        <p>Corollaries to this best practice is that Cool URIs don't change [[cooluris]], meaning that URLs describing entities SHOULD be stable and not depend on variable information. Also, the URL used to identify an entity is the best API endpoint of that entity (see also <a href="#api-versioning" class="sectionRef"></a>).</p>
       </section>
+    </section>
+
+    <section>
+      <h2>Consuming</h2>
 
       <section>
-        <h3 id="things-not-strings">Things not strings</h3>
-        <p class="practicedesc">When describing attributes, entity references SHOULD be used instead of string literals.</p>
-        <p>In some cases, when describing an attribute of an entity, it is tempting to using string values which have no independent meaning. Such values often are used for well known things. A JSON-LD context can define a term for such values, which allow them to appear as strings within the message, but be associated with specific identifiers. In this case, the property must be defined with type <code>@vocab</code> so that values will be interpreted relative to a vocabulary rather than the file location.</p>
-        <pre class="example" title="Example enumerated value">
-          {
-            "@context": ["http://schema.org", <strong>{
-              "gender": {"@id": "schema:gender", "@type": "@vocab"}
-            }</strong>],
-            "id": "http://www.wikidata.org/entity/Q76",
-            "type": "Person",
-            "name": "Barack Obama",
-            "givenName": "Barack",
-            "familyName": "Obama",
-            "jobTitle": "44th President of the United States",
-            <strong>"gender": "Male"</strong>
-          }
-        </pre>
-        <p>See article in SEO Skeptic [[seo-strings-to-things]] for further elaboration on the advantages of using <em>things</em> instead of <em>strings</em>.</p>
+        <h3 id="cache-context">Cache JSON-LD Contexts</h3>
+        <p class="practicedesc">While most use of JSON-LD should not require a client to change the data representation, JSON-LD does allow the use of various algorithms to re-shape a JSON-LD document. These require the use of the <a>JSON-LD Context</a>, which is typically represented using a link to a remote document. Because it is remote, processing time can be severely impacted by the time it takes to retrieve this context. Services providing a <a>JSON-LD Context</a> SHOULD set HTTP cache-control headers to allow liberal caching of such contexts, and clients SHOULD attempt to use a locally cached version of these documents. Typically, libraries used to process JSON-LD documents should do this for you. (See also [[json-ld-best-practice-caching]]).</p>
       </section>
-
-      <section>
-        <h3 id="reverse-references">When describing an inverse relationship, use a referenced property</h3>
-        <p class="practicedesc"></p>
-      </section>
-
-      <!--
-      <section>
-        <h3 id="xxx"></h3>
-        <p class="practicedesc"></p>
-      </section>
-      -->
     </section>
 
     <section>

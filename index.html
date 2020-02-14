@@ -307,6 +307,70 @@
           }
         </pre>
       </section>
+
+      <section>
+        <h3 id="context-order">Ordering of array elements</h3>
+        <p class="practicedesc">By default, arrays in <a class="externalDFN" href="https://www.w3.org/TR/json-ld/#sets-and-lists">JSON-LD do not convey any ordering of contained elements</a>.
+        However, for the processing of contexts, the ordering of elements in arrays <em>does</em> matter.
+        As such, when writing array-based contexts, this fact SHOULD be kept in mind.</p>
+        <p>Ordered contexts in arrays allow inheritance and overriding of context entries.
+        When processing the following example, the first <code>name</code> entry will be overridden by the second <code>name</code> entry.</p>
+        <pre class="example" title="Overriding name term">
+          {
+            "@context": [
+              {
+                "id": "@id",
+                "name": "http://schema.org/name"
+              },
+              {
+                "name": "http://xmlns.com/foaf/0.1/name"
+              }
+            ],
+            "@id": "http://www.wikidata.org/entity/Q76",
+            <strong>"name": "Barack Obama"</strong>
+          }
+        </pre>
+        <p>Order is important when processing <a class="externalDFN" href="https://www.w3.org/TR/json-ld/#protected-term-definitions">protected terms</a>.
+        While the first example will cause a term redefinition error, the second example will not throw this error.</p>
+        <pre class="example" title="Failing term redefinition">
+          {
+            "@context": [
+              {
+                "@version": 1.1,
+                "name": {
+                  "@id": "http://schema.org/name",
+                  "@protected": true
+                }
+              },
+              {
+                "name": "http://xmlns.com/foaf/0.1/name"
+              }
+            ],
+            "@id": "http://www.wikidata.org/entity/Q76",
+            <strong>"name": "Barack Obama"</strong>
+          }
+        </pre>
+        <pre class="example" title="Non-failing term redefinition">
+          {
+            "@context": [
+              {
+                "name": "http://xmlns.com/foaf/0.1/name"
+              },
+              {
+                "@version": 1.1,
+                "Person": "http://schema.org/Person",
+                "knows": "http://schema.org/knows",
+                "name": {
+                  "@id": "http://schema.org/name",
+                  "@protected": true
+                }
+              }
+            ],
+            "@id": "http://www.wikidata.org/entity/Q76",
+            <strong>"name": "Barack Obama"</strong>
+          }
+        </pre>
+      </section>
     </section>
 
 

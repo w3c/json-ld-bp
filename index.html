@@ -9,7 +9,7 @@
     <script class='remove'>
       var respecConfig = {
         localBiblio: jsonld.localBiblio,
-        specStatus: "ED",
+        specStatus: "WG-NOTE",
         copyrightStart:    "2019",
         shortName:  "json-ld-bp",
         edDraftURI: "https://w3c.github.io/json-ld-bp/",
@@ -21,11 +21,11 @@
         }],
         //previousMaturity: "NOTE",
         //previousPublishDate: "1977-03-15",
-        github:     "https://github.com/json-ld/json-ld-star/",
+        github:     "https://github.com/w3c/json-ld-bp/",
         doJsonLd:   true,
         wgPublicList: "public-json-ld-wg",
         maxTocLevel:  4,
-        noRecTrack:   "true"
+        noRecTrack:   true
       };
     </script>
     <style>
@@ -46,7 +46,7 @@
     </section>
 
   <section id="conformance">
-    <p>This document descirbes best practices for generating JSON-LD. Where normative language is used, it should be considered advisory.</p>
+    <p>This document describes best practices for generating JSON-LD. Where normative language is used, it should be considered advisory.</p>
   </section>
 
     <section class="informative">
@@ -140,7 +140,7 @@
       <div class="practice">
         <p class="practicedesc">
           <span class="practicelab" id="use-json-ld">Use well-known identifiers when describing data</span>
-          By sticking to basic JSON data expression, and providing a <a>JSON-LD Context</a>, all keys used within a JSON document can have unambigious meaning, as they bind to URLs which describe their meaning.</p>
+          By sticking to basic JSON data expression, and providing a <a>JSON-LD Context</a>, all keys used within a JSON document can have unambiguous meaning, as they bind to URLs which describe their meaning.</p>
         <pre class="example"
              data-transform="updateExample"
              title="Example JSON-LD identifying a person">
@@ -288,7 +288,7 @@
             }****
           }
         </pre>
-        <p class="note">In this example, the <code>spouse</code> relationship is bi-directional, we have arbitrarily rooted the message with Barack Obama, and created a symetric relationship from Michelle back to Barack by reference, rather than by nesting.</p>
+        <p class="note">In this example, the <code>spouse</code> relationship is bi-directional, we have arbitrarily rooted the message with Barack Obama, and created a symmetric relationship from Michelle back to Barack by reference, rather than by nesting.</p>
       </div>
 
       <div class="practice">

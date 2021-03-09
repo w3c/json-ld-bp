@@ -1,182 +1,77 @@
-/* globals omitTerms, respecConfig, $, require */
+/* globals require */
 /* JSON-LD Working Group common spec JavaScript */
-// We should be able to remove terms that are not actually
-// referenced from the common definitions
-//
-// Add class "preserve" to a definition to ensure it is not removed.
-//
-// the termlist is in a block of class "termlist", so make sure that
-// has an ID and put that ID into the termLists array so we can
-// interrogate all of the included termlists later.
-const termNames = [] ;
-const termLists = [] ;
-const termsReferencedByTerms = [] ;
-
-function restrictReferences(utils, content) {
-  const base = document.createElement("div");
-  base.innerHTML = content;
-
-  // New new logic:
-  //
-  // 1. build a list of all term-internal references
-  // 2. When ready to process, for each reference INTO the terms,
-  // remove any terms they reference from the termNames array too.
-  const noPreserve = base.querySelectorAll("dfn:not(.preserve)");
-  for (const item of noPreserve) {
-    const $t = $(item) ;
-    const titles = $t.getDfnTitles();
-    const n = $t.makeID("dfn", titles[0]);
-    if (n) {
-      termNames[n] = $t.parent();
-    }
-  }
-
-  const $container = $(".termlist", base) ;
-  const containerID = $container.makeID("", "terms") ;
-  termLists.push(containerID) ;
-  return (base.innerHTML);
-}
-
-// add a handler to come in after all the definitions are resolved
-//
-// New logic: If the reference is within a 'dl' element of
-// class 'termlist', and if the target of that reference is
-// also within a 'dl' element of class 'termlist', then
-// consider it an internal reference and ignore it.
-require(["core/pubsubhub"], (respecEvents) => {
-  "use strict";
-  respecEvents.sub('end', (message) => {
-    if (message === 'core/link-to-dfn') {
-      // all definitions are linked; find any internal references
-      const internalTerms = document.querySelectorAll(".termlist a.internalDFN");
-      for (const item of internalTerms) {
-        const idref = item.getAttribute('href').replace(/^#/,"") ;
-        if (termNames[idref]) {
-          // this is a reference to another term
-          // what is the idref of THIS term?
-          const def = item.closest('dd');
-          if (def) {
-            const tid = def.previousElementSibling
-              .querySelector('dfn')
-              .getAttribute('id');
-            if (tid) {
-              if (termsReferencedByTerms[tid] === undefined) termsReferencedByTerms[tid] = [];
-              termsReferencedByTerms[tid].push(idref);
-            }
-          }
-        }
-      }
-
-      // clearRefs is recursive.  Walk down the tree of
-      // references to ensure that all references are resolved.
-      const clearRefs = (theTerm) => {
-        if (termsReferencedByTerms[theTerm] ) {
-          for (const item of termsReferencedByTerms[theTerm]) {
-            if (termNames[item]) {
-                delete termNames[item];
-                clearRefs(item);
-            }
-          }
-        };
-        // make sure this term doesn't get removed
-        if (termNames[theTerm]) {
-          delete termNames[theTerm];
-        }
-      };
-
-      // now termsReferencedByTerms has ALL terms that
-      // reference other terms, and a list of the
-      // terms that they reference
-      const internalRefs = document.querySelectorAll("a.internalDFN");
-      for (const item of internalRefs) {
-        const idref = item.getAttribute('href').replace(/^#/,"") ;
-        // if the item is outside the term list
-        if (!item.closest('dl.termlist')) {
-          clearRefs(idref);
-        }
-      }
-
-      // delete any terms that were not referenced.
-      for (const term in termNames) {
-        const $p = $("#"+term);
-        if ($p.length > 0) {
-          const tList = $p.getDfnTitles();
-          $p.parent().next().remove(); // remove dd
-          $p.remove();                 // remove dt
-          for (const item of tList) {
-            if (respecConfig.definitionMap[item]) {
-              delete respecConfig.definitionMap[item];
-            }
-          }
-        }
-      }
-    }
-  });
-});
-
-/*
-*
-* Replace github.io references to /TR references.
-* The issue is as follows: when several specs are developed in parallel, it is a good idea
-* to use, for mutual references, the github.io URI-s. That ensures that the editors' drafts are always
-* correct in terms of mutual references.
-*
-* However, when publishing the documents, all those references must be exchanged against the final, /TR
-* URI-s. That process, when done manually, is boring and error prone. This script solves the issue:
-*
-* * Create a separate file with the 'conversions' array. See, e.g., https://github.com/w3c/csvw/blob/gh-pages/local-biblio.js
-*   for an example.
-* * Include a reference to that file and this to the respec code, after the inclusion of respec. E.g.:
-* ```
-*  <script class="remove" src="../local-biblio.js"></script>
-*  <script class="remove" src="https://www.w3.org/Tools/respec/respec-w3c-common"></script>
-*  <script class="remove" src="../replace-ed-uris.js"></script>
-* ```
-*
-* This function will be automatically executed when the respec source is saved in an (X)HTML file.
-* Note that
-*
-* * Links in the header part will *not* be changed. That part is usually generated automatically, and the reference to the
-*   editor's draft must stay unchanged
-* * The text content of an <a> element will also be converted (if needed). This means that the reference list may also
-*   use include the github.io address (as it should...)
-*
-*/
-require(["core/pubsubhub"], (respecEvents) => {
-  "use strict";
-  respecEvents.sub('beforesave', (documentElement) => {
-    for (const anchor of document.querySelectorAll("a[href]")) {
-      const dd = anchor.closest('dd');
-
-      // Don't replace specific anchors
-      if (dd) {
-        const dt = dd.previousElementSibling;
-        if (dt.textContent.match(/Latest editor|Test suite|Implementation report/)) return;
-      }
-      if (anchor.closest('section.preserve')) return;
-
-      if (anchor.href === undefined) return;
-
-      for (const toReplace in jsonld.conversions) {
-        if (anchor.href.indexOf(toReplace) !== -1) {
-          const replacement = jsonld.conversions[toReplace];
-          const newHref = anchor.href.replace(toReplace, replacement);
-          anchor.setAttribute('href', newHref);
-          if (anchor.textContent.indexOf(toReplace) !== -1) {
-            anchor.textContent = anchor.textContent.replace(toReplace, replacement);
-          }
-        }
-      }
-    }
-  });
-});
 
 /*
 * Implement tabbed examples.
 */
 require(["core/pubsubhub"], (respecEvents) => {
   "use strict";
+
   respecEvents.sub('end-all', (documentElement) => {
+    // remove data-cite on where the citation is to ourselves.
+    const selfDfns = Array.from(document.querySelectorAll("dfn[data-cite^='__SPEC__#']"));
+    for (const dfn of selfDfns) {
+      const anchor = dfn.querySelector('a');
+      if (anchor) {
+        const anchorContent = anchor.textContent;
+        dfn.removeChild(anchor);
+        dfn.textContent = anchorContent;
+      }
+      delete dfn.dataset.cite;
+    }
+
+    // Update data-cite references to ourselves.
+    const selfRefs = document.querySelectorAll("a[data-cite^='__SPEC__#']");
+    for (const anchor of selfRefs) {
+      anchor.href= anchor.dataset.cite.replace(/^.*#/,"#");
+      delete anchor.dataset.cite;
+    }
+
+    //
+    // Remove/hide definitions which are  unused
+    // 1. Find all definitions in a termlist which are not preserved, indexed by data-cite
+    // 2. Find all references to definitions not in termlist
+    // 4. Hide definitions which are unreferenced
+    //
+    const remoteDfns = [];
+    document.querySelectorAll(".termlist dfn:not(.preserve)")
+      .forEach((item, index) => {
+        if (!selfDfns.includes(item)) {
+          remoteDfns[item.dataset["cite"]] = item;
+        }
+      });
+
+    // termlist internal references to definitions
+    const internalRefs = Array.from(document.querySelectorAll(".termlist a[data-cite]"));
+
+    // all references to definitions which are not internal refs
+    const allRefs = Array.from(document.querySelectorAll("a[data-cite]"))
+      .filter(e => !internalRefs.includes(e));
+
+    // Remove terms which are referenced
+    for (const item of allRefs) {
+      const cite = item.dataset["cite"];
+      // Delete this from remoteDfns, as it is referenced
+      delete remoteDfns[cite];
+    }
+
+    // Now remoteDfns only contains unreferenced terms
+    for (const item of Object.values(remoteDfns)) {
+      const dt = item.closest("dt");
+      if(dt) {
+        const dd = dt.nextElementSibling;
+        // Note, removing messes up some ReSpec references, so hiding instead
+        // dt.parentNode.removeChild(dt);
+        // dd.parentNode.removeChild(dd);
+        dt.hidden = true;
+        dd.hidden = true;
+      }
+    }
+    
+    //
+    // Playground
+    //
+
     // Add playground links
     for (const link of document.querySelectorAll("a.playground")) {
       let pre;
@@ -226,7 +121,7 @@ require(["core/pubsubhub"], (respecEvents) => {
       }
 
       link.setAttribute('href',
-        'https://json-ld.org/playground-dev/#' +
+        'https://json-ld.org/playground/#' +
         Object.keys(linkQueryParams).map(k => `${encodeURIComponent(k)}=${encodeURIComponent(linkQueryParams[k])}`)
               .join('&'));
     }

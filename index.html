@@ -28,6 +28,10 @@
         noRecTrack:   "true"
       };
     </script>
+    <style>
+      .hl-bold { font-weight: bold; color: #0a3; }
+      .comment { color: #999; }
+    </style>
   </head>
   <body>
     <section id='abstract'>
@@ -101,7 +105,9 @@
           <span id="use-json" class="practicelab">Publish data using developer friendly JSON</span>
           JSON [[json]] is the most popular format for publishing data through APIs; developers like it, it is easy to parse, and it is supported natively in most programming languages.
         </p>
-        <pre class="example" title="Example JSON representing a Person">
+        <pre class="example"
+             data-transform="updateExample"
+             title="Example JSON representing a Person">
           {
             "name": "Barack Obama",
             "givenName": "Barack",
@@ -135,9 +141,11 @@
         <p class="practicedesc">
           <span class="practicelab" id="use-json-ld">Use well-known identifiers when describing data</span>
           By sticking to basic JSON data expression, and providing a <a>JSON-LD Context</a>, all keys used within a JSON document can have unambigious meaning, as they bind to URLs which describe their meaning.</p>
-        <pre class="example" title="Example JSON-LD identifying a person">
+        <pre class="example"
+             data-transform="updateExample"
+             title="Example JSON-LD identifying a person">
           {
-            <strong>"@context": "http://schema.org"</strong>,
+            ****"@context": "http://schema.org"****,
             "name": "Barack Obama",
             "givenName": "Barack",
             "familyName": "Obama",
@@ -146,7 +154,9 @@
         </pre>
         <div class="note">
           <p>When expanding such a data representation, a JSON-LD processor replaces these terms with the URIs they expand to (as well as making property values unambiguous):</p>
-          <pre class="example" title="Example JSON-LD identifying a person (expanded)">
+          <pre class="example"
+               data-transform="updateExample"
+               title="Example JSON-LD identifying a person (expanded)">
             [
               {
                 "http://schema.org/familyName": [{"@value": "Obama"}],
@@ -165,7 +175,9 @@
           <span class="practicelab" id="typed-objects">Provide one or more types for JSON objects</span>
           Principles of <a>Linked Data</a> dictate that messages SHOULD be self describing, which includes adding a <code>type</code> to such messages.</p>
         <p>Many APIs use JSON messages where the type of information being conveyed is inferred from the retrieval endpoint. For example, when retrieving information about a Github Commit, you might see the following response:</p>
-        <pre class="example" title="Github Commit message">
+        <pre class="example"
+             data-transform="updateExample"
+             title="Github Commit message">
           {
             "sha": "7638417db6d59f3c431d3e1f261cc637155684cd",
             "url": "https://api.github.com/repos/octocat/Hello-World/git/commits/7638417db6d59f3c431d3e1f261cc637155684cd",
@@ -193,11 +205,13 @@
           }
         </pre>
         <p>The only way to know this is a commit is to infer it based on the published API documentation, and the fact that it was returned from an endpoint defined for retrieving information about commits.</p>
-        <pre class="example" title="Example message of type Person">
+        <pre class="example"
+             data-transform="updateExample"
+             title="Example message of type Person">
           {
             "@context": "http://schema.org",
             "id": "http://www.wikidata.org/entity/Q76",
-            <strong>"type": "Person"</strong>,
+            ****"type": "Person"****,
             "name": "Barack Obama",
             "givenName": "Barack",
             "familyName": "Obama",
@@ -210,10 +224,12 @@
         <p class="practicedesc">
           <span class="practicelab" id="use-ids">Identify objects with a unique identifier</span>
           Entities described in JSON objects often describe web resources having a URL; entity descriptions SHOULD use an identifier uniquely identifying that entity. In this case, using the resource location as the identity of the object is consistent with this practice.</p>
-        <pre class="example" title="Example JSON-LD identifying a person">
+        <pre class="example"
+             data-transform="updateExample"
+             title="Example JSON-LD identifying a person">
           {
             "@context": "http://schema.org",
-            <strong>"id": "http://www.wikidata.org/entity/Q76"</strong>,
+            ****"id": "http://www.wikidata.org/entity/Q76"****,
             "type": "Person",
             "name": "Barack Obama",
             "givenName": "Barack",
@@ -229,18 +245,20 @@
           <span class="practicelab" id="things-not-strings">Things not strings</span>
           When describing attributes, entity references SHOULD be used instead of string literals.</p>
         <p>In some cases, when describing an attribute of an entity, it is tempting to using string values which have no independent meaning. Such values are often used for well known things. A JSON-LD context can define a term for such values, which allow them to appear as strings within the message, but be associated with specific identifiers. In this case, the property must be defined with type <code>@vocab</code> so that values will be interpreted relative to a vocabulary rather than the file location.</p>
-        <pre class="example" title="Example enumerated value">
+        <pre class="example"
+             data-transform="updateExample"
+             title="Example enumerated value">
           {
-            "@context": ["http://schema.org", <strong>{
+            "@context": ["http://schema.org", ****{
               "gender": {"@id": "schema:gender", "@type": "@vocab"}
-            }</strong>],
+            }****],
             "id": "http://www.wikidata.org/entity/Q76",
             "type": "Person",
             "name": "Barack Obama",
             "givenName": "Barack",
             "familyName": "Obama",
             "jobTitle": "44th President of the United States",
-            <strong>"gender": "Male"</strong>
+            ****"gender": "Male"****
           }
         </pre>
         <p>See article in SEO Skeptic [[seo-strings-to-things]] for further elaboration on the advantages of using <em>things</em> instead of <em>strings</em>.</p>
@@ -251,7 +269,9 @@
           <span class="practicelab" id="embed-objects">Nest referenced inline objects</span>
           When multiple related entity descriptions are provided inline, related entities SHOULD be nested.</p>
         <p>For example, when relating one entity to another, where the related entity is described in the same message:</p>
-        <pre class="example" title="Nested relationships">
+        <pre class="example"
+             data-transform="updateExample"
+             title="Nested relationships">
           {
             "@context": "http://schema.org",
             "id": "http://www.wikidata.org/entity/Q76",
@@ -260,12 +280,12 @@
             "givenName": "Barack",
             "familyName": "Obama",
             "jobTitle": "44th President of the United States",
-            <strong>"spouse": {
+            ****"spouse": {
               "id": "http://www.wikidata.org/entity/Q13133",
               "type": "Person",
               "name": "Michelle Obama",
               "spouse": "http://www.wikidata.org/entity/Q76"
-            }</strong>
+            }****
           }
         </pre>
         <p class="note">In this example, the <code>spouse</code> relationship is bi-directional, we have arbitrarily rooted the message with Barack Obama, and created a symetric relationship from Michelle back to Barack by reference, rather than by nesting.</p>
@@ -287,7 +307,9 @@
           <span class="practicelab" id="type-links">External references should use typed term</span>
           When using a property intended to reference another entity, properties SHOULD be defined to type string values as being references.</p>
         <p>For example, the <code>schema:image</code> property a Thing to an Image:</p>
-        <pre class="example" title="Example typed relationship">
+        <pre class="example"
+             data-transform="updateExample"
+             title="Example typed relationship">
           {
             "@context": "http://schema.org",
             "id": "http://www.wikidata.org/entity/Q76",
@@ -296,25 +318,29 @@
             "givenName": "Barack",
             "familyName": "Obama",
             "jobTitle": "44th President of the United States",
-            <strong>"image": "https://commons.wikimedia.org/wiki/File:President_Barack_Obama.jpg"</strong>
+            ****"image": "https://commons.wikimedia.org/wiki/File:President_Barack_Obama.jpg"****
           }
         </pre>
         <p>This will be interpreted as a reference, rather than a string literal, because (at the time of publication), the schema.org JSON-LD Context defines <code>image</code> to be of type <code>@id</code>:</p>
-        <pre class="example" title="schema.org context snippet for image">
+        <pre class="example"
+             data-transform="updateExample"
+             title="schema.org context snippet for image">
           {
             "@context": {
-              ...
-              "image": { "@id": "schema:image", <strong>"@type": "@id"</strong>},
-              ...
+              ####...####
+              "image": { "@id": "schema:image", ****"@type": "@id"****}####,
+              ...####
             }
           }
         </pre>
         <p>If not defined as such in a remote context, terms may be (re-) defined in a local context:</p>
-        <pre class="example" title="Example typed relationship">
+        <pre class="example"
+             data-transform="updateExample"
+             title="Example typed relationship">
           {
-            "@context": ["http://schema.org", <strong>{
+            "@context": ["http://schema.org", ****{
               "image": { "@id": "schema:image", "@type": "@id"}
-            }</strong>],
+            }****],
             "id": "http://www.wikidata.org/entity/Q76",
             "type": "Person",
             "name": "Barack Obama",
@@ -334,7 +360,9 @@
         As such, when writing array-based contexts, this fact should be kept in mind.</p>
         <p>Ordered contexts in arrays allow inheritance and overriding of context entries.
         When processing the following example, the first <code>name</code> entry will be overridden by the second <code>name</code> entry.</p>
-        <pre class="example" title="Overriding name term">
+        <pre class="example"
+             data-transform="updateExample"
+             title="Overriding name term">
           {
             "@context": [
               {
@@ -346,12 +374,14 @@
               }
             ],
             "@id": "http://www.wikidata.org/entity/Q76",
-            <strong>"name": "Barack Obama"</strong>
+            ****"name": "Barack Obama"****
           }
         </pre>
         <p>Order is important when processing <a class="externalDFN" href="https://www.w3.org/TR/json-ld/#protected-term-definitions">protected terms</a>.
         While the first example will cause a term redefinition error, the second example will not throw this error.</p>
-        <pre class="example" title="Failing term redefinition">
+        <pre class="illegal-example"
+             data-transform="updateExample"
+             title="Failing term redefinition">
           {
             "@context": [
               {
@@ -366,10 +396,12 @@
               }
             ],
             "@id": "http://www.wikidata.org/entity/Q76",
-            <strong>"name": "Barack Obama"</strong>
+            ****"name": "Barack Obama"****
           }
         </pre>
-        <pre class="example" title="Non-failing term redefinition">
+        <pre class="example"
+             data-transform="updateExample"
+             title="Non-failing term redefinition">
           {
             "@context": [
               {
@@ -386,7 +418,7 @@
               }
             ],
             "@id": "http://www.wikidata.org/entity/Q76",
-            <strong>"name": "Barack Obama"</strong>
+            ****"name": "Barack Obama"****
           }
         </pre>
       </div>

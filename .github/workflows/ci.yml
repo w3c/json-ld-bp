@@ -29,5 +29,5 @@ jobs:
     - name: ReSpec Checker
       uses: w3c/spec-prod@v2
       with:
-        VALIDATE_LINKS: true
+        VALIDATE_LINKS: false
         VALIDATE_MARKUP: true

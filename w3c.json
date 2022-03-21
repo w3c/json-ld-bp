@@ -1,6 +1,6 @@
  {
-     "group": [107714],
-     "contacts": ["iherman"],
+     "group": ["wg/json-ld"],
+     "contacts": ["plehegar"],
      "repo-type": "note",
      "short-name": "json-ld11-bp"
  }

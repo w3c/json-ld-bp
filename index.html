@@ -200,6 +200,7 @@
 <section class="informative">
   <h2>Data Documents</h2>
 
+  <h3>Use developer friendly JSON</h3>
   <div class="practice">
     <p class="practicedesc">
       <span id="use-json" class="practicelab">Publish data using developer friendly JSON</span>
@@ -221,6 +222,7 @@
     }
   </pre>
 
+  <h3>Use a top-level object</h3>
   <div class="practice">
     <p class="practicedesc">
       <span id="top-level-object" class="practicelab">Use a top-level object</span>
@@ -231,6 +233,7 @@
     </p>
   </div>
 
+  <h3>Use native values</h3>
   <div class="practice">
     <p class="practicedesc">
       <span class="practicelab" id="native-values">Use native values</span>
@@ -243,6 +246,7 @@
     so using native representation of numbers can lose precision.
   </p>
 
+  <h3>Assume arrays are unordered</h3>
   <div class="practice">
     <p class="practicedesc">
       <span class="practicelab" id="unordered-values">Assume arrays are unordered</span>
@@ -252,6 +256,7 @@
       multiple array values SHOULD be presumed to be unordered. (See <cite><a href="http://www.w3.org/TR/json-ld/#lists-and-sets">Lists and Sets</a></cite> in [[JSON-LD]]).</p>
   </div>
 
+  <h3>Map to well-known identifiers</h3>
   <div class="practice">
     <p class="practicedesc">
       <span class="practicelab" id="use-json-ld">Use well-known identifiers when describing data</span>
@@ -298,6 +303,7 @@
     </p>
   </div>
 
+  <h3>Provide types for objects</h3>
   <div class="practice">
     <p class="practicedesc">
       <span class="practicelab" id="typed-objects">Provide one or more types for JSON objects</span>
@@ -356,6 +362,7 @@
     }
   </pre>
 
+  <h3>Give objects unique identifiers</h3>
   <div class="practice">
     <p class="practicedesc">
       <span class="practicelab" id="use-ids">Identify objects with a unique identifier</span>
@@ -387,6 +394,7 @@
     particularly if the <strong>type</strong> of the entity describes a Person,
     rather than a WebPage.</p>
 
+  <h3>Use things not strings</h3>
   <div class="practice">
     <p class="practicedesc">
       <span class="practicelab" id="things-not-strings">Things not strings</span>
@@ -419,6 +427,7 @@
     }
   </pre>
 
+  <h3>Relate objects through properties</h3>
   <div class="practice">
     <p class="practicedesc">
       <span class="practicelab" id="embed-objects">Nest referenced inline objects</span>
@@ -452,6 +461,7 @@
     from Michelle back to Barack by reference,
     rather than by nesting.</p>
 
+  <h3>...</h3>
   <div class="practice">
     <p class="practicedesc">
       <span class="practicelab" id="reverse-references">When describing an inverse relationship, use a referenced property</span>
@@ -463,6 +473,7 @@
 <section class="informative">
   <h2>Contexts</h2>
 
+  <h3>Type external references</h3>
   <div class="practice">
     <p class="practicedesc">
       <span class="practicelab" id="type-links">External references SHOULD use typed term</span>
@@ -518,6 +529,7 @@
     }
   </pre>
 
+  <h3>Provide ordering to arrays</h3>
   <div class="practice">
     <p class="practicedesc">
       <span class="practicelab" id="context-order">Ordering of array elements</span>
@@ -603,6 +615,7 @@
 <section class="informative">
   <h2>Publishing</h2>
 
+  <h3>Host dereferencable entities</h3>
   <div class="practice">
     <p class="practicedesc">
       <span class="practicelab" id="dereferencable-entities">Provide a representation of the entity related by URL</span>
@@ -634,6 +647,8 @@
     Because it is remote,
     processing time can be severely impacted
     by the time it takes to retrieve this context.</p>
+
+  <h3>Cache JSON-LD Contexts</h3>
   <div class="practice">
     <p class="practicedesc">
       <span class="practicelab" id="cache-context">Cache JSON-LD Contexts</span>

@@ -643,10 +643,35 @@
     JSON-LD does allow the use of various algorithms
     to re-shape a JSON-LD document.
     These require the use of the <a>JSON-LD Context</a>,
-    which is typically represented using a link to a remote document.
-    Because it is remote,
-    processing time can be severely impacted
-    by the time it takes to retrieve this context.</p>
+    which is typically represented using a link to a remote document.</p>
+
+  <h3>Remote contexts have their risks</h3>
+
+  <dl>
+    <dt>Network might be down</dt>
+    <dd>Application will be unable to resolve the context.</dd>
+    <dt>Context might change</dt>
+    <dd>Documents can expand differently when the remote context changes.</dd>
+    <dt>Context might be spoofed</dt>
+    <dd>Attackers can alter processing by serving a different context.</dd>
+    <dt>Context fetches reveal processing</dt>
+    <dd>Requests for remote contexts can expose when and where documents are processed.</dd>
+    <dt>Context servers might be overloaded</dt>
+    <dd>Widely used contexts can receive excessive traffic from repeated processing.</dd>
+    <dt>Processing might be delayed</dt>
+    <dd>Applications can spend significant time retrieving remote contexts.</dd>
+  </dl>
+
+  <p>Systems processing JSON-LD SHOULD choose an explicit policy
+    for resolving contexts. We propose a few such policies below.</p>
+
+  <h3>Use Vetted Contexts</h3>
+  <p>If all expected contexts are known in advance,
+    implementations SHOULD pre-download and verify those contexts,
+    map their URLs to local copies,
+    and use a document loader that resolves only those approved mappings
+    instead of fetching arbitrary remote contexts at processing time.
+    An attempt to fetch any other context MUST trigger an error.</p>
 
   <h3>Cache JSON-LD Contexts</h3>
   <div class="practice">

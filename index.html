@@ -23,6 +23,14 @@
               "title": "JSON-LD Best Practice: Context Caching",
               "href": "https://web.archive.org/web/20230131235929/https://manu.sporny.org/2016/json-ld-context-caching/",
               "date": "2016-04-24"
+            },
+            "Hydra": {
+              "authors": [
+                "Markus Lanthaler"
+              ],
+              "title": "Hydra Core Vocabulary: A Vocabulary for Hypermedia-Driven Web APIs",
+              "href": "https://www.hydra-cg.com/spec/latest/core/",
+              "publisher": "Hydra W3C Community Group"
             }
           }
         },
@@ -664,8 +672,105 @@
 
 <section class="informative">
   <h2>Serializing Large Collections</h2>
-  <p class="ednote">Describe schema.org extension using Role sub-class,
-    Hydra collections, and LDP collections.</p>
+  <p class="ednote">Describe schema.org extension using Role sub-class, and LDP collections.</p>
+
+  <p>Large collections force a choice the serialization itself can't make: deliver everything
+    or deliver a bounded slice with directions to the rest. These two options, streaming and
+    pagination, are a spectrum and not alternatives, dependent on the consumer's access pattern
+    and not the collection's size. Streaming suits bulk transfer of a whole dataset;
+    pagination suits interactive and partial access.</p>
+
+  <div class="practice">
+    <p class="practicedesc">
+      <span class="practicelab" id="collection-members">Collection members carry dereferencable
+        identifiers</span>
+      Members of a collection that are intended to be independently accessible SHOULD
+      each carry an `@id`, so a consumer can recover any individual member without
+      concern for how it arrived, and SHOULD carry an `@type`, so a consumer can
+      interpret a member without refetching it or consulting documentation. Collections
+      whose members are blank nodes — with no identity outside of the document — are beyond this practice.
+    </p>
+
+    <p>Where the collection URI is a path prefix of member URIs (`.../foo` → `.../foo/bar`),
+      the containment is legible to developers who expect JSON API access patterns — but the
+      authoritative relationship is the assertion of membership in the collection, not the path.</p>
+  </div>
+
+  <h3>Streaming</h3>
+  <p class="ednote">Emit the document so a processor can produce RDF incrementally, using
+    approaches outlined in [[json-ld11-streaming]].
+  </p>
+
+  <h3>Pagination</h3>
+  <p>Where streaming JSON-LD is not practical, pagination bounds memory demands instead.
+    Publishers unable to implement a streaming profile SHOULD paginate.</p>
+
+  <div class="practice">
+    <p class="practicedesc">
+      <span class="practicelab" id="hypermedia-controls">Paginate large collections
+        using hypermedia controls</span>
+      Represent the collection using [[Hydra]] as a `hydra:Collection` carrying `hydra:totalItems` and
+      a `hydra:view` (a `hydra:PartialCollectionView`) with `hydra:first`, `hydra:previous`,
+      `hydra:next`, and `hydra:last` links. The view node SHOULD have its own `@id` (the
+      current page's URI) so pages are addressable and citable. Clients follow server-minted
+      links rather than constructing URIs. Membership in the collection is asserted using
+      `hydra:member`.
+    </p>
+  </div>
+
+  <pre class="example" data-transform="updateExample" title="Hydra hypermedia controls for large collections">
+      {
+        "@context": {
+            "hydra": "http://www.w3.org/ns/hydra/core#",
+            "sosa": "http://www.w3.org/ns/sosa/",
+            "geo": "http://www.opengis.net/ont/geosparql#"
+        },
+        "@id": "http://example.org/foo",
+        "@type": "hydra:Collection",
+        "hydra:totalItems": 66208,
+        "hydra:view": {
+          "@id": "http://example.org/foo?page=2",
+          "@type": "hydra:PartialCollectionView",
+          "hydra:first": {"@id": "http://example.org/foo?page=1"},
+          "hydra:previous": {"@id": "http://example.org/foo?page=1"},
+          "hydra:next": {"@id": "http://example.org/foo?page=3"},
+          "hydra:last": {"@id": "http://example.org/foo?page=663"}
+        },
+        "hydra:member": [
+          {
+            "@id": "http://example.org/foo/bar",
+            "@type": ["sosa:FeatureOfInterest", "geo:Feature"],
+            "sosa:hasSample": {"@id": "http://example.org/foo/bar/baz"}
+          }
+        ]
+      }
+  </pre>
+
+  <div class="practice">
+    <p class="practicedesc">
+      <span class="practicelab" id="link-headers">Mirror pagination in HTTP Link headers</span>
+      Emit the pagination relations in an HTTP `Link` header [[RFC8288]] on every paged
+      response, in addition to any in-body controls. Link headers are independent of
+      serialization, so clients can follow pagination without parsing the body, and
+      representations that cannot carry Hydra controls in-line (e.g., `geo+json` or
+      `csv`) advertise the same relations. If both are present, they MUST agree.
+    </p>
+  </div>
+
+  <pre class="example" data-content-type="text/plain" data-ignore="true"
+    title="Pagination relations mirrored in an HTTP Link header">
+      GET /foo?page=2 HTTP/1.1
+      Host: example.org
+      Accept: application/geo+json
+
+      HTTP/1.1 200 OK
+      Content-Type: application/geo+json
+      Link: &lt;http://example.org/foo?page=1&gt;; rel="first",
+            &lt;http://example.org/foo?page=1&gt;; rel="prev",
+            &lt;http://example.org/foo?page=3&gt;; rel="next",
+            &lt;http://example.org/foo?page=663&gt;; rel="last"
+    </pre>
+
 </section>
 
 <section class="informative">

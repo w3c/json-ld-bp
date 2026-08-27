@@ -55,6 +55,18 @@
     <style>
       .hl-bold { font-weight: bold; color: #0a3; }
       .comment { color: #999; }
+      .pro-contra {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5em;
+        margin: 1em 0;
+      }
+      .pro-contra > div > :first-child {
+        margin-top: 0;
+      }
+      @media (max-width: 40em) {
+        .pro-contra { grid-template-columns: 1fr; }
+      }
     </style>
   </head>
 <body>
@@ -510,7 +522,7 @@
       }
     }
   </pre>
-  <p>If not defined as such in a remote context,
+  <p>If not defined as such in a referenced context,
     terms may be (re-) defined in a local context:</p>
   <pre class="example"
        data-transform="updateExample"
@@ -643,23 +655,100 @@
     JSON-LD does allow the use of various algorithms
     to re-shape a JSON-LD document.
     These require the use of the <a>JSON-LD Context</a>,
-    which is typically represented using a link to a remote document.
-    Because it is remote,
-    processing time can be severely impacted
-    by the time it takes to retrieve this context.</p>
+    which is typically provided as a <em>referenced context</em>:
+    a context identified by a URI.</p>
 
-  <h3>Cache JSON-LD Contexts</h3>
+  <pre class="example"
+       data-transform="updateExample"
+       title="Context identified by URI">
+    {
+      "@context": "http://schema.org",
+      "id": "http://www.wikidata.org/entity/Q76",
+      "type": "Person",
+      "name": "Barack Obama",
+      "givenName": "Barack",
+      "familyName": "Obama",
+      "jobTitle": "44th President of the United States"
+    }
+  </pre>
+
+  <p>How an implementation resolves an identifier is
+    implementation-dependent and is performed using a
+    <a data-cite="JSON-LD11-API#dom-jsonldoptions-documentloader">document loader</a>.</p>
+
+  <p>In this example, the context is identified by a URI that is also an HTTP URL:
+    <code>http://schema.org</code>, which hints at one obvious method to resolve it:
+    use the network. That is what most readers will expect,
+    but it is not preferred in all situations.</p>
+
+  <p>Systems processing JSON-LD SHOULD choose an explicit policy
+    for resolving contexts. We will now look at a few possible policies, discussing their benefits and risks.</p>
+
+  <h3>Fetch context from the network by its URI</h3>
+
+  <div class="pro-contra">
+    <div>
+      <h4>Benefits</h4>
+      <ol>
+        <li><strong>No context catalog is required</strong><br>
+          Documents referencing unknown contexts can still be processed
+          when those URIs can be resolved over the network.</li>
+        <li><strong>Terminology is centrally maintained</strong><br>
+          Publishers can update mappings without consumer redeployment.</li>
+      </ol>
+    </div>
+    <div>
+      <h4>Risks</h4>
+      <ol>
+        <li><strong>Network might be down</strong><br>
+          Processing fails or stalls when the network or context server is unreachable.</li>
+        <li><strong>Context might change</strong><br>
+          The same document can expand differently between processing runs.</li>
+        <li><strong>Context might be spoofed</strong><br>
+          Attackers can alter processing by serving a different context.</li>
+        <li><strong>Context fetches reveal processing</strong><br>
+          Network fetches can expose when and where documents are processed.</li>
+        <li><strong>Context servers might be overloaded</strong><br>
+          Widely used contexts can receive excessive traffic from repeated processing.</li>
+        <li><strong>Processing might be delayed</strong><br>
+          Applications can spend significant time fetching contexts over the network.</li>
+      </ol>
+    </div>
+  </div>
+
+  <h4>Cache JSON-LD Contexts over HTTP</h4>
+  <p>When contexts are fetched over HTTP, <strong>caching</strong> mitigates risks 5 and 6,
+    and can partially mitigate risks 1 and 4
+    while a fresh cached entry remains available.</p>
   <div class="practice">
     <p class="practicedesc">
-      <span class="practicelab" id="cache-context">Cache JSON-LD Contexts</span>
-      Services providing a <a>JSON-LD Context</a> SHOULD
-      set HTTP cache-control headers to allow liberal caching of such contexts,
+      <span class="practicelab" id="cache-context">Cache JSON-LD Contexts over HTTP</span>
+      Services providing a <a>JSON-LD Context</a> over HTTP SHOULD
+      set HTTP cache-control headers [[RFC9111]] to allow liberal caching of such contexts,
       and clients SHOULD attempt to use a locally cached version
       of these documents.</p>
   </div>
   <p>Typically, libraries used to process JSON-LD documents
     should do this for you.
     (See also [[json-ld-best-practice-caching]]).</p>
+
+  <h3>Use Vetted Contexts</h3>
+  <p>Some deployments cannot rely on network resolution at all:
+    for example air-gapped or offline systems,
+    or environments with a strict security boundary
+    where only approved contexts can be used.
+    In those cases, context URIs are still identifiers,
+    but resolution is limited to a local catalog of pre-verified documents.</p>
+  <div class="practice">
+    <p class="practicedesc">
+      <span class="practicelab" id="vetted-contexts">Use Vetted Contexts</span>
+      If all expected contexts are known in advance,
+      implementations SHOULD provision vetted local representations for those contexts,
+      map their URIs to those representations,
+      and use a document loader that resolves only those approved mappings.
+      An attempt to resolve any other context URI SHOULD trigger an error.</p>
+  </div>
+
 </section>
 
 <section class="informative">

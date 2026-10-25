@@ -700,37 +700,48 @@
     <div>
       <h4>Risks</h4>
       <ol>
-        <li><strong>Network might be down</strong><br>
+        <li id="risk-network-down"><strong>Network might be down</strong><br>
           Processing fails or stalls when the network or context server is unreachable.</li>
-        <li><strong>Context might change</strong><br>
+        <li id="risk-context-change"><strong>Context might change</strong><br>
           The same document can expand differently between processing runs.</li>
-        <li><strong>Context might be spoofed</strong><br>
+        <li id="risk-context-spoofed"><strong>Context might be spoofed</strong><br>
           Attackers can alter processing by serving a different context.</li>
-        <li><strong>Context fetches reveal processing</strong><br>
+        <li id="risk-fetch-reveals-processing"><strong>Context fetches reveal processing</strong><br>
           Network fetches can expose when and where documents are processed.</li>
-        <li><strong>Context servers might be overloaded</strong><br>
+        <li id="risk-server-overload"><strong>Context servers might be overloaded</strong><br>
           Widely used contexts can receive excessive traffic from repeated processing.</li>
-        <li><strong>Processing might be delayed</strong><br>
+        <li id="risk-processing-delay"><strong>Processing might be delayed</strong><br>
           Applications can spend significant time fetching contexts over the network.</li>
       </ol>
     </div>
   </div>
 
   <h4>Cache JSON-LD Contexts over HTTP</h4>
-  <p>When contexts are fetched over HTTP, <strong>caching</strong> mitigates risks 5 and 6,
-    and can partially mitigate risks 1 and 4
-    while a fresh cached entry remains available.</p>
+  <p>When contexts are fetched over HTTP, <strong>caching</strong> mitigates risks
+    <a href="#risk-server-overload">5</a> and <a href="#risk-processing-delay">6</a>.
+    A representation kept across process restarts also mitigates risks
+    <a href="#risk-network-down">1</a> and <a href="#risk-fetch-reveals-processing">4</a>
+    while the client can use that representation without contacting the origin.
+    When the representation is no longer fresh and the origin cannot be reached,
+    that mitigation continues only if the response directives allow stale reuse.</p>
   <div class="practice">
     <p class="practicedesc">
       <span class="practicelab" id="cache-context">Cache JSON-LD Contexts over HTTP</span>
       Services providing a <a>JSON-LD Context</a> over HTTP SHOULD
       set HTTP cache-control headers [[RFC9111]] to allow liberal caching of such contexts,
-      and clients SHOULD attempt to use a locally cached version
-      of these documents.</p>
+      and SHOULD provide a validator such as <code>ETag</code> or <code>Last-Modified</code>.
+      Clients SHOULD retain cached representations of these documents across process restarts.
+      Clients SHOULD reuse a fresh stored representation without contacting the origin.
+      When a stored representation is stale and the origin is reachable,
+      clients SHOULD revalidate it with a validator it carries,
+      such as <code>ETag</code> or <code>Last-Modified</code>.
+      When the origin cannot be reached, clients SHOULD continue to use a stored representation
+      unless its cache directives forbid stale reuse.</p>
   </div>
-  <p>Typically, libraries used to process JSON-LD documents
-    should do this for you.
-    (See also [[json-ld-best-practice-caching]]).</p>
+  <p>An HTTP cache can apply these rules for the life of that cache.
+    A <a data-cite="JSON-LD11-API#dom-jsonldoptions-documentloader">document loader</a>
+    needs its own retained copy when the process does not keep that cache.
+    (See also [[json-ld-best-practice-caching]].)</p>
 
   <h3>Use Vetted Contexts</h3>
   <p>Some deployments cannot rely on network resolution at all:

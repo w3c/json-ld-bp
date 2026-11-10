@@ -134,7 +134,7 @@ GEM
       stringio
     public_suffix (7.0.5)
     racc (1.8.1)
-    rack (3.1.21)
+    rack (3.1.23)
     rake (13.3.0)
     rdf (3.3.4)
       bcp47_spec (~> 0.2)

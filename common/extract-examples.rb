@@ -7,6 +7,7 @@
 # - @data-context identifies the title of the context used to process the example
 # - @data-context-for identifies the source to apply this context to, verifies that the no errors are encountered
 # - @data-result-for identifies the title of the source which should result in the content. May be used along with @data-frame or @data-context
+# - @data-context-url registers a script's content as a local fixture for the specified context URL
 # - @data-options indicates the comma-separated option/value pairs to pass to the processor
 require 'getoptlong'
 require 'json'
@@ -207,11 +208,16 @@ ARGV.each do |input|
   $stderr.puts "\ninput: #{input}"
   example_number = 1 # Account for imported Example 1 in typographical conventions
   examples = {}
+  context_fixtures = {}
   errors = []
   warnings = []
 
   File.open(input, "r") do |f|
     doc = Nokogiri::HTML.parse(f.read)
+    doc.css('script[data-context-url]').each do |element|
+      context_fixtures[element['data-context-url']] = element.content
+    end
+
     doc.css(".example, .illegal-example").each do |element|
       error = nil
       warn = nil
@@ -296,6 +302,15 @@ ARGV.each do |input|
     end
   end
 
+  document_loader = lambda do |url, **options, &block|
+    if (fixture = context_fixtures[url.to_s])
+      block.call(JSON::LD::API::RemoteDocument.new(fixture,
+        documentUrl: url, contentType: 'application/ld+json'))
+    else
+      JSON::LD::API.documentLoader(url, **options, &block)
+    end
+  end
+
   # Process API functions for
   examples.values.sort_by {|ex| ex[:number]}.each do |ex|
     next if number && number != ex[:number]
@@ -316,6 +331,7 @@ ARGV.each do |input|
       memo.merge(k.to_sym => v)
     end
     options[:validate] = true unless options.key?(:validate)
+    options[:documentLoader] = document_loader unless context_fixtures.empty?
 
     $stderr.puts "example #{ex[:number]}: #{ex.select{|k,v| k != :content}.to_json(JSON::LD::JSON_STATE)}" if verbose
     $stderr.puts "content: #{ex[:content]}" if verbose

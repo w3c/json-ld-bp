@@ -197,6 +197,10 @@
       Terms may be generally defined as any valid JSON string
       other than a JSON-LD keyword.
     </dd>
+    <dt><dfn>inline context</dfn></dt>
+    <dd>A context definition included in the document.</dd>
+    <dt><dfn>referenced context</dfn></dt>
+    <dd>A context identified by a URI.</dd>
     <dt><dfn>Linked Data</dfn></dt>
     <dd>
       Linked Data [[linked-data]] is a way to create
@@ -522,7 +526,7 @@
       }
     }
   </pre>
-  <p>If not defined as such in a referenced context,
+  <p>If not defined as such in a <a>referenced context</a>,
     terms may be (re-) defined in a local context:</p>
   <pre class="example"
        data-transform="updateExample"
@@ -627,6 +631,123 @@
 <section class="informative">
   <h2>Publishing</h2>
 
+  <h3>Publishing contexts</h3>
+  <p>Publishers can use <a>referenced contexts</a>, <a>inline contexts</a>, or both.</p>
+  <h4>Referenced contexts</h4>
+  <div class="practice">
+    <p class="practicedesc">
+      <span class="practicelab" id="stable-context-versions">If publishing a referenced context document, keep it immutable and versioned</span>
+      Publishers SHOULD keep each <a>referenced context</a> available and unchanged at its URL.
+      Publish changed definitions at a new URL.
+      Apply the same rule to every context it references, directly or indirectly.</p>
+  </div>
+  <p>This avoids outdated definitions in <a href="#cache-context">cached contexts</a>
+    when a publisher releases a new version.</p>
+  <p>For example, this document references the first context version:</p>
+  <pre id="first-context-version" class="example" title="Document using the first context version">
+    {
+      "@context": "https://example.org/contexts/person/v1.jsonld",
+      "name": "Alice"
+    }
+  </pre>
+  <p>A later document can reference the second version:</p>
+  <pre class="example" title="Document using the second context version">
+    {
+      "@context": "https://example.org/contexts/person/v2.jsonld",
+      "name": "Bob"
+    }
+  </pre>
+  <script type="application/json" data-context-url="https://example.org/contexts/person/v1.jsonld">
+    {
+      "@context": {
+        "name": "https://schema.org/name"
+      }
+    }
+  </script>
+  <script type="application/json" data-context-url="https://example.org/contexts/person/v2.jsonld">
+    {
+      "@context": {
+        "name": "https://schema.org/givenName"
+      }
+    }
+  </script>
+  <script type="application/json" class="example"
+          title="Expansion using the first context version"
+          data-result-for="Document using the first context version">
+    [{
+      "https://schema.org/name": [{"@value": "Alice"}]
+    }]
+  </script>
+  <script type="application/json" class="example"
+          title="Expansion using the second context version"
+          data-result-for="Document using the second context version">
+    [{
+      "https://schema.org/givenName": [{"@value": "Bob"}]
+    }]
+  </script>
+  <p>The first context version and its dependencies remain available and unchanged,
+    so consumers can continue to process [[[#first-context-version]]] using the original definitions.</p>
+  <div class="pro-contra">
+    <div>
+      <h5>Benefits</h5>
+      <ol>
+        <li><strong>Shared maintenance</strong><br>
+          A publisher can maintain one context for many documents.</li>
+        <li><strong>HTTP caching</strong><br>
+          Clients can <a href="#cache-context">cache</a> a context and reuse it across documents.</li>
+      </ol>
+    </div>
+    <div>
+      <h5>Tradeoffs</h5>
+      <ol>
+        <li><strong>Context resolution</strong><br>
+          Clients need a way to <a href="#consuming">resolve the reference</a>,
+          such as a network fetch or a local catalog.</li>
+      </ol>
+    </div>
+  </div>
+  <h4>Inline contexts</h4>
+  <div class="pro-contra">
+    <div>
+      <h5>Benefits</h5>
+      <ol>
+        <li><strong>Fewer context requests</strong><br>
+          Inlined definitions do not require separate requests,
+          reducing the <a href="#risk-server-overload">load on the context server</a>.</li>
+      </ol>
+    </div>
+    <div>
+      <h5>Tradeoffs</h5>
+      <ol>
+        <li><strong>Larger documents</strong><br>
+          Each document carries its own definitions, increasing its size.</li>
+        <li><strong>Repeated maintenance</strong><br>
+          To change a definition across documents, publishers must update each copy.</li>
+      </ol>
+    </div>
+  </div>
+  <div class="practice">
+    <p class="practicedesc">
+      <span class="practicelab" id="inline-contexts">Consider including context definitions in the document</span>
+      To let consumers process a document without fetching contexts:</p>
+    <ul>
+      <li>Include all required context definitions in the document.</li>
+      <li>Avoid remote context references, including <code>@import</code>,
+        in nested and scoped contexts as well.</li>
+      <li>Omit the <a data-cite="JSON-LD11#interpreting-json-as-json-ld">context Link header</a>.</li>
+    </ul>
+  </div>
+  <pre class="example"
+       data-transform="updateExample"
+       title="A document with an inline context">
+    {
+      "@context": {
+        "name": "https://schema.org/name"
+      },
+      "name": "Carol"
+    }
+  </pre>
+
   <h3>Host dereferencable entities</h3>
   <div class="practice">
     <p class="practicedesc">
@@ -655,8 +776,7 @@
     JSON-LD does allow the use of various algorithms
     to re-shape a JSON-LD document.
     These require the use of the <a>JSON-LD Context</a>,
-    which is typically provided as a <em>referenced context</em>:
-    a context identified by a URI.</p>
+    which is typically provided as a <a>referenced context</a>.</p>
 
   <pre class="example"
        data-transform="updateExample"
@@ -759,6 +879,7 @@
       and use a document loader that resolves only those approved mappings.
       An attempt to resolve any other context URI SHOULD trigger an error.</p>
   </div>
+  <p>Applications that require approved inline definitions also need a policy for those definitions.</p>
 
 </section>
 
